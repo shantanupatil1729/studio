@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,7 +12,9 @@ import type { CoreTask, PlannedTask, TaskLog } from '@/lib/types';
 import { getCoreTasks, getPlannedTasksForDateRange, getTaskLogsForPeriod } from '@/services/firestore-service';
 import { Lightbulb, Download, CheckCircle, ListChecks } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { getProductivitySuggestions, generateWeeklySummary } from '@/ai/flows'; // Corrected import names
+import { getProductivitySuggestions } from '@/ai/flows/productivity-suggestions';
+import { generateWeeklySummary } from '@/ai/flows/weekly-summary';
+import { useRouter } from 'next/navigation'; // Added for redirect
 
 // Helper to convert TaskLog[] to JSON string for AI
 const formatTaskLogsForAI = (logs: TaskLog[]): string => {
@@ -35,6 +38,7 @@ export default function DashboardPage() {
   const [aiSuggestions, setAISuggestions] = useState<string[]>([]);
   const [aiWeeklySummary, setAIWeeklySummary] = useState<string>('');
   const [loadingAI, setLoadingAI] = useState(false);
+  const router = useRouter(); // Initialized router
 
   useEffect(() => {
     if (user) {
@@ -96,7 +100,7 @@ export default function DashboardPage() {
   // This would typically involve checking current time against user's preferred reminderTimes.
   // For this scaffold, we'll use a manual button.
 
-  if (!userProfile?.coreTasksSet) {
+  if (userProfile && !userProfile.coreTasksSet) { // Added check for userProfile to prevent error if null
     return (
       <div className="text-center py-10">
         <ListChecks className="mx-auto h-12 w-12 text-primary mb-4" />
@@ -106,9 +110,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-  // Need to import router if used
-  // import { useRouter } from 'next/navigation';
-  // const router = useRouter();
 
   return (
     <div className="space-y-8">
