@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -25,4 +26,8 @@ export default function HomePage() {
         <Skeleton className="h-16 w-16 rounded-full mx-auto bg-primary/20" />
         <Skeleton className="h-8 w-3/4 mx-auto" />
         <Skeleton className="h-6 w-1/2 mx-auto" />
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  );
+}
