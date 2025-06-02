@@ -14,7 +14,7 @@ import { Lightbulb, Download, CheckCircle, ListChecks } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { getProductivitySuggestions } from '@/ai/flows/productivity-suggestions';
 import { generateWeeklySummary } from '@/ai/flows/weekly-summary';
-import { useRouter } from 'next/navigation'; // Added for redirect
+import { useRouter } from 'next/navigation';
 
 // Helper to convert TaskLog[] to JSON string for AI
 const formatTaskLogsForAI = (logs: TaskLog[]): string => {
@@ -38,7 +38,7 @@ export default function DashboardPage() {
   const [aiSuggestions, setAISuggestions] = useState<string[]>([]);
   const [aiWeeklySummary, setAIWeeklySummary] = useState<string>('');
   const [loadingAI, setLoadingAI] = useState(false);
-  const router = useRouter(); // Initialized router
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -96,11 +96,7 @@ export default function DashboardPage() {
     }
   };
   
-  // TODO: Implement reminder logic to open LoggingModal
-  // This would typically involve checking current time against user's preferred reminderTimes.
-  // For this scaffold, we'll use a manual button.
-
-  if (userProfile && !userProfile.coreTasksSet) { // Added check for userProfile to prevent error if null
+  if (userProfile && !userProfile.coreTasksSet) {
     return (
       <div className="text-center py-10">
         <ListChecks className="mx-auto h-12 w-12 text-primary mb-4" />
