@@ -10,4 +10,6 @@ export default function LoginPage() {
       <CardContent>
         <LoginForm />
       </CardContent>
-    </Card
+    </Card>
+  );
+}

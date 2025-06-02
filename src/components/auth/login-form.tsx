@@ -134,4 +134,8 @@ export function LoginForm() {
         Don&apos;t have an account?{' '}
         <Link href="/signup" className="font-medium text-primary hover:underline">
           Sign up
-        </
+        </Link>
+      </p>
+    </div>
+  );
+}
