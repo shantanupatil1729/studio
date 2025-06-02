@@ -1,8 +1,9 @@
+
 'use client';
 
 import type { User as FirebaseUser } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { auth, db } from '@/lib/firebase';
+import { auth as firebaseAuthService, db as firebaseDbService } from '@/lib/firebase'; // Renamed imports
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -25,10 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-
   const fetchUserProfile = async (firebaseUser: FirebaseUser): Promise<UserProfile | null> => {
+    if (!firebaseDbService) {
+      console.warn("FetchUserProfile: Firestore DB service is not available.");
+      return null;
+    }
     if (!firebaseUser) return null;
-    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDocRef = doc(firebaseDbService, 'users', firebaseUser.uid);
     const userDocSnap = await getDoc(userDocRef);
     if (userDocSnap.exists()) {
       return userDocSnap.data() as UserProfile;
@@ -48,16 +52,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   const updateUserProfile = async (profileData: Partial<UserProfile>) => {
-    if (user) {
-      const userDocRef = doc(db, 'users', user.uid);
+    if (!firebaseDbService) {
+      console.warn("UpdateUserProfile: Firestore DB service is not available.");
+      return;
+    }
+    if (user) { // user from AuthProvider state
+      const userDocRef = doc(firebaseDbService, 'users', user.uid);
       await setDoc(userDocRef, profileData, { merge: true });
       setUserProfile(prev => prev ? { ...prev, ...profileData } : null);
     }
   };
 
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    if (!firebaseAuthService) {
+      console.warn("AuthProvider: Firebase Auth service is not available. Authentication will be disabled.");
+      setUser(null);
+      setUserProfile(null);
+      setLoading(false);
+      setInitialLoadComplete(true);
+      return; 
+    }
+
+    const unsubscribe = onAuthStateChanged(firebaseAuthService, async (firebaseUser) => {
       setLoading(true);
       if (firebaseUser) {
         setUser(firebaseUser);
@@ -72,10 +88,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, []); // firebaseAuthService is module-level, doesn't need to be a dependency if its reference doesn't change
 
   const signOut = async () => {
-    await firebaseSignOut(auth);
+    if (firebaseAuthService) {
+      await firebaseSignOut(firebaseAuthService);
+    } else {
+      console.warn("SignOut: Firebase Auth service is not available.");
+    }
     setUser(null);
     setUserProfile(null);
   };
@@ -94,3 +114,4 @@ export function useAuth() {
   }
   return context;
 }
+

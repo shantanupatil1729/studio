@@ -1,14 +1,16 @@
+
 'use client';
 import type { ReactNode } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { useAuth } from '@/contexts/auth-provider';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading, initialLoadComplete, userProfile } = useAuth();
   const router = useRouter();
+  const pathname = usePathname(); // Used usePathname
 
   useEffect(() => {
     if (initialLoadComplete && !loading && !user) {
@@ -20,11 +22,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     if (initialLoadComplete && user && userProfile && !userProfile.coreTasksSet) {
         // If user is logged in, profile loaded, but core tasks not set, redirect.
         // Avoid redirecting if already on core-tasks page.
-        if (router.pathname !== '/core-tasks') { 
+        if (pathname !== '/core-tasks') { // Used pathname here
              router.replace('/core-tasks');
         }
     }
-  }, [user, userProfile, initialLoadComplete, router]);
+  }, [user, userProfile, initialLoadComplete, router, pathname]); // Added pathname to dependencies
 
 
   if (loading || !initialLoadComplete) {
@@ -39,14 +41,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     );
   }
   
-  if (!user) {
+  if (!user && initialLoadComplete) { // Ensure initialLoad is complete before this check
     // This case should ideally be handled by the useEffect redirect,
-    // but as a fallback, show a loading or minimal state.
-    return (
-         <div className="flex min-h-screen flex-col items-center justify-center">
-            <p>Redirecting to login...</p>
-         </div>
-    );
+    // but as a fallback, show a message or redirect.
+    // If already on /login, no need to show this, the useEffect handles it.
+    if (pathname !== '/login') {
+        return (
+             <div className="flex min-h-screen flex-col items-center justify-center">
+                <p>Redirecting to login...</p>
+             </div>
+        );
+    }
+    // If on /login and user is null, AuthLayout will render the login form.
+    // So, no explicit rendering here is needed if already on /login.
   }
 
 
@@ -62,3 +69,4 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
